@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Available Labs</title>
+  <style>
+    body {
+      background: url("{{ url_for('static', filename='ava_bg.jpg') }}") no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+      padding-top: 100px;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 70%;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      color: white;
+    }
+    th {
+      background: #4caf50;
+    }
+    button {
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .msg { color: yellow; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Labs for {{ day }} - Hour {{ hour }}</h2>
+  <h4>Logged in as: {{ user }}</h4>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="msg">
+        {% for category, message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <table>
+    <tr>
+      <th>Lab Name</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+
+    {% for lab in labs %}
+    <tr>
+      <td>{{ lab['lab_name'] }}</td>
+      <td>
+        {% if lab['is_booked'] %}
+          Booked by {{ lab['booked_by'] if lab['booked_by'] else 'Unknown' }}
+        {% else %}
+          Available
+        {% endif %}
+      </td>
+      <td>
+        <form method="POST" action="{{ url_for('toggle_booking', lab_id=lab['id'], day=day, hour=hour) }}">
+          {% if not lab['is_booked'] %}
+            <button type="submit">Book</button>
+          {% elif lab['booked_by'] == user or not lab['booked_by'] or lab['booked_by'] == 'Unknown' %}
+            <button type="submit" style="background:red;">Cancel</button>
+          {% else %}
+            <button type="button" onclick="alert('You can’t cancel another user’s booking.')" disabled>
+              Not Allowed
+            </button>
+          {% endif %}
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{{ url_for('select_time') }}" style="color:white;">Back</a> |
+  <a href="{{ url_for('logout') }}" style="color:white;">Logout</a>
+</body>
+</html>
